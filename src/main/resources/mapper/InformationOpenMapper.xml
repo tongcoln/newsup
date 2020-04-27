@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tt.newsup.dao.InformationOpenDao">
+
+    <select id="getbossAll" resultType="com.tt.newsup.model.InformationOpenModel">
+        select boss_merber_num,
+        boss_business_time,
+        boss_debug_start,
+        boss_business_name,
+        pon_state_rejected,
+        pon_state,prospect_sate,
+        prospect_state_reject,pon_process_classification,prospect_process_classification from t_open_information_boss where 1=1
+        <if test="bossMerberNum !=null and bossMerberNum !=''">
+            AND boss_merber_num = #{bossMerberNum}
+        </if>
+        <if test="bossGroupCoding !=null and bossGroupCoding !=''">
+            AND boss_group_coding = #{bossGroupCoding}
+        </if>
+        <if test="bossSetName !=null and bossSetName !=''">
+            AND boss_set_name = #{bossSetName}
+        </if>
+        <if test="informationLinkMan !=null and informationLinkMan !=''">
+            AND information_linkman = #{informationLinkMan}
+        </if>
+        <if test = "bossBusinessName != null and bossBusinessName !=''">
+            AND boss_business_name LIKE CONCAT(CONCAT('%',#{bossBusinessName}),'%')
+        </if>
+        order by boss_business_time desc
+
+    </select>
+
+
+
+    <select id="getlinkmanboss" resultType="com.tt.newsup.model.InformationOpenModel">
+        select boss_merber_num,
+        boss_business_time,
+        boss_debug_start,
+        boss_business_name,
+        pon_state_rejected,
+        pon_state,prospect_sate,
+        prospect_state_reject,pon_process_classification,prospect_process_classification from t_open_information_boss where 1=1
+        <if test="bossMerberNum !=null and bossMerberNum !=''">
+            AND boss_merber_num = #{bossMerberNum}
+        </if>
+        <if test="bossGroupCoding !=null and bossGroupCoding !=''">
+            AND boss_group_coding = #{bossGroupCoding}
+        </if>
+        <if test="bossSetName !=null and bossSetName !=''">
+            AND boss_set_name = #{bossSetName}
+        </if>
+        <if test="informationLinkMan !=null and informationLinkMan !=''">
+            AND information_linkman = #{informationLinkMan}
+        </if>
+        <if test = "bossBusinessName != null and bossBusinessName !=''">
+            AND boss_business_name LIKE CONCAT(CONCAT('%',#{bossBusinessName}),'%')
+        </if>
+            AND information_phone=#{userid}
+            order by boss_business_time desc
+
+    </select>
+
+
+
+
+</mapper>
