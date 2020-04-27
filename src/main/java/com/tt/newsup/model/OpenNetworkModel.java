@@ -6,11 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class OpenNetworkModel {
+public class OpenNetworkModel  implements Serializable {
+    private static final long serialVersionUID = -4429862546880716680L;
     private Integer openNetworkId;//open_network_id
     private String openNetworkCity;//open_network_city
     private String openNetworkArea;//open_network_area

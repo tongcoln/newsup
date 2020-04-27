@@ -8,10 +8,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OpenNetworkNewModel {
+public class OpenNetworkNewModel  implements Serializable {
+    private static final long serialVersionUID = 7645526953634923500L;
     private  Integer  openNetworkId;// open_network_id;
     private  String openNetworkCity;
     private  String openNetworkArea;

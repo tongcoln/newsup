@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tt.newsup.dao.ServiceHallDao">
+
+    <select id="selectAllByName" resultType="com.tt.newsup.model.ServiceHallModel">
+        select service_store_id,
+        service_store_ditch_name,
+        service_store_ditch_code,
+        service_store_type,
+        service_store_eare,
+        service_store_adress
+        from t_service_store
+        where 1=1
+        <if test = "results != null and results !=''">
+            AND service_store_ditch_name LIKE CONCAT(CONCAT('%',#{results}),'%')
+        </if>
+
+    </select>
+
+</mapper>
