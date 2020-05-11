@@ -2,13 +2,20 @@ package com.tt.newsup.controller;
 
 import com.tt.newsup.model.*;
 import com.tt.newsup.server.ServiceHallService;
+import com.tt.newsup.utils.FileNameUtil;
+import com.tt.newsup.utils.FileUploadUtil;
+import jdk.nashorn.internal.ir.RuntimeNode;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.websocket.server.ServerEndpoint;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -200,9 +207,420 @@ public class ServiceHallController {
             serviceHallService.insertprogress(serviceStoreDitchCode, user, datemodel, datamodel1,mytopicId);
             return "1";
         }
+    }
+
+    /**
+     * 根据userid查询出抢单的站厅
+     * @param userid
+     * @return
+     */
+    @RequestMapping("/getstoremess")
+    @CrossOrigin
+    public ServiceHallModel getstoremess(@RequestParam("userid") String userid){
+        ServiceHallModel serviceHallModel =  serviceHallService.getstoremess(userid);
+        return serviceHallModel;
+    }
 
 
+    /**
+     * 查询用户
+     * @param user
+     * @return
+     */
+    @RequestMapping("/getactive")
+    @CrossOrigin
+    public Integer getactive(String user){
+        Integer active =  serviceHallService.getactive(user);
+        return active;
+    }
+
+    /**
+     * 查询服务营销动作表的项目名称
+     * @param type
+     * @return
+     */
+
+    @RequestMapping("/getmanagenamelist")
+    @CrossOrigin
+    public List<String> getmanagenamelist(@RequestParam("type")Integer type){
+        List<String> stringList = null;
+        if(type ==1){ //查询网络线条的项目名称
+          stringList = serviceHallService.getmaagenetworkname();
+        }
+
+        if(type ==2){ //查询市场线条的项目名称
+             stringList = serviceHallService.getmaagemarketname();
+        }
+        return stringList;
+    }
+
+    /**
+     * 根据项目名称查询服务营销动作表的具体内容
+     */
+    @RequestMapping("/getmanagequestion")
+    @CrossOrigin
+    public List<String> getmanagequestion(@RequestParam("type") Integer type,
+                                          @RequestParam("manageTableName") String manageTableName
+    ){
+        List<String> stringList = null;
+        if(type == 1){
+            stringList = serviceHallService.getmanagequestionnetwork(manageTableName);
+        }
+
+        if(type ==2){
+            stringList = serviceHallService.getmanagequestionmarket(manageTableName);
+
+        }
+        return stringList;
+    }
+
+
+    @RequestMapping("/uploadmanageimg")
+    @CrossOrigin
+    public String uploadmanageimg(@RequestParam("file") MultipartFile file,
+                                  @RequestParam("manageTableName")String manageTableName,
+                                  @RequestParam("index") Integer index,
+                                  @RequestParam("tableId")Integer tableId,
+                                  @RequestParam("userid")String userid,
+                                  HttpServletRequest request ){
+
+
+        String localPath="/Users/mac/Documents/upload/"; //MAC路径
+        //String localPath ="D:/images/";  //windows路径
+
+        String fileName=file.getOriginalFilename();
+        String newfileName = FileNameUtil.getFileName(fileName);
+
+        if(FileUploadUtil.upload(file, localPath, newfileName)){
+            // 将上传的文件写入到服务器端文件夹
+            // 获取当前项目的完整url
+            String requestURL = request.getRequestURL().toString();
+            // 获取当前项目的请求路径url
+            String requestURI = request.getRequestURI();
+            // 得到去掉了uri的路径
+            String url = requestURL.substring(0, requestURL.length()-requestURI.length() + 1)+localPath+newfileName;
+            //  url= localPath+fileName;
+
+            url = url.replaceAll("//Users/mac/Documents/upload/","/upload/");  //mac版本
+            //url=url.replaceAll("D:/images/","upload/");
+
+            System.out.println(url);
+            serviceHallService.insermanageImage(manageTableName,index,tableId,url,userid);
+
+            return "上传成功";
+
+        }
+
+        return "上传失败";
+    }
+
+    /**
+     * 获取管理者执行表的图片
+     */
+
+    @RequestMapping("/getmanageImage")
+    @CrossOrigin
+    public List<List<ImageModel>> getmanageImage(@RequestParam("userid") String userid,
+                                                 @RequestParam("tablename")String tablename
+                                                    ){
+        List<List<ImageModel>>  images =  serviceHallService.getmanageImage(userid,tablename);
+        return images;
 
     }
+
+    /**
+     * 保存管理者临时答案
+     */
+    @RequestMapping("/saveAnswerBlank")
+    @CrossOrigin
+    public String saveAnswerBlank(@RequestParam("radio")List<String> radio,
+                                  @RequestParam("message")List<String> message,
+                                  @RequestParam("userid")String userid,
+                                  @RequestParam("type")Integer type,
+                                  @RequestParam("manageTableName")String manageTableName){
+        serviceHallService.saveAnswerBlank(radio,message,userid,type,manageTableName);
+        return null;
+    }
+    /**
+     * 删除管理者执行表的图片
+     */
+
+    @RequestMapping("/delemanageimg")
+    @CrossOrigin
+    public String delemanageimg(@RequestParam("url")String  url,
+                                @RequestParam("type")Integer type
+                                ){
+
+       serviceHallService.delemanageimg(url,type);
+
+        return null;
+    }
+
+    @RequestMapping("/getmanageaswerblack")
+    @CrossOrigin
+    public List<ServiceManageAnswerModel> getmanageaswerblack(@RequestParam("userid")String userid,
+                                      @RequestParam("manageTableName")String manageTableName,
+                                      @RequestParam("type")Integer type
+                                      ){
+
+        List<ServiceManageAnswerModel> serviceManageAnswerModels =   serviceHallService.getmanageaswerblack(userid,manageTableName,type);
+        return  serviceManageAnswerModels;
+    }
+
+    @RequestMapping("/savemanageAswer")
+    @CrossOrigin
+    public String savemanageAswer(@RequestParam("userid")String userid,
+                                  @RequestParam("type")Integer type
+                                ){
+
+        String code = serviceHallService.savemanageAswer(userid,type);
+        return code;
+    }
+
+    /**
+     * 查询体验者执行表的问题列表
+     */
+    @RequestMapping("/gettastedata")
+    @CrossOrigin
+    public List<ServiceHallTasteQuestionModel> gettastedata(@RequestParam("type")Integer type){
+        List<ServiceHallTasteQuestionModel> serviceHallTasteQuestionModels =  serviceHallService.gettastedata(type);
+
+        return serviceHallTasteQuestionModels;
+    }
+
+    /**
+     *保存体验者执行表中的图片
+     *
+     */
+    @RequestMapping("/uploadtasteimg")
+    @CrossOrigin
+    public String uploadtasteimg(@RequestParam("file") MultipartFile file,
+                                 @RequestParam("index") Integer index,
+                                 @RequestParam("tableId")Integer tableId,
+                                 @RequestParam("userid")String userid,
+                                 HttpServletRequest request
+                                 ){
+        String localPath="/Users/mac/Documents/upload/"; //MAC路径
+        //String localPath ="D:/images/";  //windows路径
+
+        String fileName=file.getOriginalFilename();
+        String newfileName = FileNameUtil.getFileName(fileName);
+
+        if(FileUploadUtil.upload(file, localPath, newfileName)){
+            // 将上传的文件写入到服务器端文件夹
+            // 获取当前项目的完整url
+            String requestURL = request.getRequestURL().toString();
+            // 获取当前项目的请求路径url
+            String requestURI = request.getRequestURI();
+            // 得到去掉了uri的路径
+            String url = requestURL.substring(0, requestURL.length()-requestURI.length() + 1)+localPath+newfileName;
+            //  url= localPath+fileName;
+
+            url = url.replaceAll("//Users/mac/Documents/upload/","/upload/");  //mac版本
+            //url=url.replaceAll("D:/images/","upload/");
+
+            System.out.println(url);
+            serviceHallService.insertasteImage(index,tableId,url,userid);
+
+            return "上传成功";
+
+        }
+
+        return "上传失败";
+    }
+
+    /**
+     * 获取体验者执行表图片
+     * @param userid
+     * @return
+     */
+    @RequestMapping("/gettasteImage")
+    @CrossOrigin
+    public List<List<ImageModel>> gettasteImage(@RequestParam("userid") String userid
+    ){
+        System.out.println("开始");
+        List<List<ImageModel>>  images =  serviceHallService.gettasteImage(userid);
+        return images;
+    }
+
+    /**
+     * 删除体验者执行表图片
+     */
+
+    @RequestMapping("/deletasteimg")
+    @CrossOrigin
+    public  void deletasteimg(@RequestParam("url")String url){
+        serviceHallService.deletasteimg(url);
+    }
+
+
+    @RequestMapping("/savetasteaswer")
+    @CrossOrigin
+    public String saveTasteaswer(@RequestParam("userid")String userid,
+                                 @RequestParam("radio")List<String> radio,
+                                 @RequestParam("message")List<String> message,
+                                 @RequestParam("type")Integer type
+                                  ){
+        String code = serviceHallService.insertTasteAnswer(userid,radio,message,type);
+
+
+
+        return code;
+    }
+
+
+
+    @RequestMapping("/savesummary")
+    @CrossOrigin
+    public String saveSummary(@RequestParam("userid")String userid,
+                              @RequestParam("type")Integer type,
+                              @RequestParam("message")String message
+                              ){
+
+        String code = serviceHallService.saveSummary(userid,type,message);
+
+        return code;
+
+    }
+    @RequestMapping("/saveproblemimgblank")
+    @CrossOrigin
+    public String saveProblemImgBlank(@RequestParam("file")MultipartFile file,HttpServletRequest request) {
+
+        String localPath = "/Users/mac/Documents/upload/"; //MAC路径
+        //String localPath ="D:/images/";  //windows路径
+
+        String fileName = file.getOriginalFilename();
+        String newfileName = FileNameUtil.getFileName(fileName);
+
+        if (FileUploadUtil.upload(file, localPath, newfileName)) {
+            // 将上传的文件写入到服务器端文件夹
+            // 获取当前项目的完整url
+            String requestURL = request.getRequestURL().toString();
+            // 获取当前项目的请求路径url
+            String requestURI = request.getRequestURI();
+            // 得到去掉了uri的路径
+            String url = requestURL.substring(0, requestURL.length() - requestURI.length() + 1) + localPath + newfileName;
+            //  url= localPath+fileName;
+
+            url = url.replaceAll("//Users/mac/Documents/upload/", "/upload/");  //mac版本
+            //url=url.replaceAll("D:/images/","upload/");
+            return url;
+        }else {
+            return "上传失败";
+        }
+
+    }
+
+    //保存管理者执行表的一线直通车
+    @RequestMapping("/savemanageproblem")
+    @CrossOrigin
+    public String saveManageProblem(@RequestParam("userid")String userid,
+                                    @RequestParam("tablename")String tablename,
+                                    @RequestParam("problemId")Integer problemId,
+                                    @RequestParam("problemtitle")String problemtitle,
+                                    @RequestParam("problemcontext")String problemcontext,
+                                    @RequestParam("imgs")List<String> imgs
+                                    ){
+        String code = serviceHallService.saveManageProblem(userid,tablename,problemId,problemtitle,problemcontext,imgs);
+
+        return code;
+    }
+
+    @RequestMapping("/savetasteproblem")
+    @CrossOrigin
+    public String saveTasteProblem(@RequestParam("userid")String userid,
+                                   @RequestParam("problemId")Integer problemId,
+                                   @RequestParam("problemtitle")String problemtitle,
+                                   @RequestParam("problemcontext")String problemcontext,
+                                   @RequestParam("imgs")List<String> imgs){
+
+        String code = serviceHallService.saveTasteProblem(userid,problemId,problemtitle,problemcontext,imgs);
+        return null;
+    }
+
+    @RequestMapping("/getjudgelist")
+    @CrossOrigin
+    public List<ServiceStoreProceedEndModel> getJudgeList(@RequestParam("userid")String userid){
+
+        List<ServiceStoreProceedEndModel> serviceStoreProceedEndModels = serviceHallService.getServiceEnd(userid);
+
+
+        return serviceStoreProceedEndModels;
+    }
+
+
+    //根据传过来的serviceStoreMytopicId查找课题线条是网络类还是市场类
+    @RequestMapping("/judgetype")
+    @CrossOrigin
+    public Integer judgeType(@RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId){
+        Integer type = serviceHallService.getMytopicType(serviceStoreMytopicId);
+
+        return type;
+    }
+    //获取评价表中的管理者执行表的按钮数组
+
+    @RequestMapping("/getmanarodios")
+    @CrossOrigin
+    public List<String>  getManaRodios(@RequestParam("name")Integer name,
+                                       @RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId,
+                                       @RequestParam("type")Integer type){
+
+        List<String> rodisList = serviceHallService.getManaRodios(name,serviceStoreMytopicId,type);
+
+        return rodisList;
+    }
+
+    //获取评价表中的管理执行表中的input框信息
+    @RequestMapping("/getmanagemessages")
+    @CrossOrigin
+    public List<String> getManageMessages(@RequestParam("name")Integer name,
+                                            @RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId,
+                                            @RequestParam("type")Integer type){
+
+        List<String> messagelist = serviceHallService.getManageMessages(name,serviceStoreMytopicId,type);
+
+        return messagelist;
+    }
+
+
+    //获取评价表中的管理执行表中的input框信息
+    @RequestMapping("/getmamageimglist")
+    @CrossOrigin
+    public List<List<ImageModel>>getManageImgList(@RequestParam("name")Integer name,
+                                          @RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId,
+                                          @RequestParam("type")Integer type){
+
+        List<List<ImageModel>>manageImgList = serviceHallService.getManageImgs(name,serviceStoreMytopicId,type);
+
+        return manageImgList;
+    }
+
+    @RequestMapping("/gettasterodios")
+    @CrossOrigin
+    public String[] getTasteRodios( @RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId,
+                                        @RequestParam("type")Integer type){
+
+        String[] rodioList =  serviceHallService.getTasteRodios(serviceStoreMytopicId,type);
+        return rodioList;
+    }
+
+    @RequestMapping("/gettastemessage")
+    @CrossOrigin
+    public String[] getTasteMessage(@RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId,
+                                    @RequestParam("type")Integer type){
+        String[] messageList = serviceHallService.getTasteMessage(serviceStoreMytopicId,type);
+        return messageList;
+    }
+
+    @RequestMapping("/gettasteimgs")
+    @CrossOrigin
+    public List<List<ImageModel>> getTasteImgs(@RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId,
+                                               @RequestParam("type")Integer type){
+
+        List<List<ImageModel>> tasteImgs = serviceHallService.getTasteImgs(serviceStoreMytopicId,type);
+        return tasteImgs;
+    }
+
+
 
 }

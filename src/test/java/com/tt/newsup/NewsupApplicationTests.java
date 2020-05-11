@@ -2,10 +2,7 @@ package com.tt.newsup;
 
 
 import com.tt.newsup.model.DataItemsModel;
-import com.tt.newsup.server.InformationOpenService;
-import com.tt.newsup.server.MailService;
-import com.tt.newsup.server.OpenNetworkService;
-import com.tt.newsup.server.SendMailService;
+import com.tt.newsup.server.*;
 import com.tt.newsup.utils.replaceString;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +29,9 @@ class NewsupApplicationTests<pubilc> {
     @Autowired
     private MailService mailService;
 
+    @Autowired
+    private ServiceHallService serviceHallService;
+
     @Test
     void contextLoads() {
     }
@@ -49,14 +49,12 @@ class NewsupApplicationTests<pubilc> {
      */
 
 
-
     @Test
-    public void repaceStringTest(){
-        String countd="dsadsadsadsasasadsad";
-        String old=replaceString.replaceString2Star(countd,10,0);
+    public void repaceStringTest() {
+        String countd = "dsadsadsadsasasadsad";
+        String old = replaceString.replaceString2Star(countd, 10, 0);
         System.out.println(old);
     }
-
 
 
     @Test
@@ -65,28 +63,46 @@ class NewsupApplicationTests<pubilc> {
         openNetworkService.getAll();
 
 
-        }
+    }
 
 
-        @Test
-        public void  getdata(){
-            long currentTime = System.currentTimeMillis() ;
-            currentTime -=30*60*1000;
-            Date date=new Date(currentTime);
-            SimpleDateFormat dateFormat = new SimpleDateFormat(
-                    "yyyy-MM-dd HH:mm:ss");
-            System.out.println(dateFormat.format(date));
+    @Test
+    public void getdata() {
+        long currentTime = System.currentTimeMillis();
+        currentTime -= 30 * 60 * 1000;
+        Date date = new Date(currentTime);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd HH:mm:ss");
+        System.out.println(dateFormat.format(date));
 
-        }
+    }
 
-        @Test
-        public void sendMailServiceTest(){
-            sendMailService.sendmail();
-        }
+    @Test
+    public void sendMailServiceTest() {
+        sendMailService.sendmail();
+    }
 
-        @Test
-        public  void sendMailTest(){
-            mailService.sendMail("xxx.com","这里是邮件的主题","助理是邮件的内容");//第一个参数是邮件的接收方
+    @Test
+    public void sendMailTest() {
+        mailService.sendMail("xxx.com", "这里是邮件的主题", "助理是邮件的内容");//第一个参数是邮件的接收方
+    }
+
+    @Test
+    public void getTableIDTest() {
+
+////        serviceHallService.getmanageImage("13981853804","演示专区(60分)");
+//        serviceHallService.savemanageAswer("13981853804", 1);
+//        serviceHallService.getManaRodios(0,25,2);
+        serviceHallService.getManageImgs(0,25,2);
+//        String str = "ImageModel(url=http://127.0.0.1:8081/upload/1b938fd8b62841d0a068effecf51c0ff.jpg)";
+//        String[] index = str.split("=");
+//        if (index.length > 0) {
+//            String indexstr = index[1];
+//
+//            String[] index2 = indexstr.split("\\)");
+//            String result = index2[0];
+//            System.out.println(result);
+//        }
     }
 }
 
