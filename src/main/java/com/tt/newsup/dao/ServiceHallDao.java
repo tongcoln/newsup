@@ -1,8 +1,6 @@
 package com.tt.newsup.dao;
 
 import com.tt.newsup.model.*;
-import com.tt.newsup.server.ServiceHallService;
-import lombok.Data;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -44,7 +42,7 @@ public interface ServiceHallDao {
      * @param user
      * @return
      */
-    @Select("select * from t_service_store_mytopic_proceed")
+    @Select("select * from t_service_store_mytopic_proceed where service_store_mytopic_user = #{user}")
     ServiceStoreTopicProceedModel getmytopiclist(String user);
 
     /**
@@ -109,11 +107,11 @@ public interface ServiceHallDao {
      * @param userid
      * @return
      */
-    @Select("select DISTINCT service_store_ditch_code from t_service_store_proceed where service_store_user = #{userid}")
-    String getStoreId(String userid);
-
-    @Select("select * from  t_service_store where 1=1 and service_store_ditch_code = #{serviceStoreDitchCode}")
-    ServiceHallModel getStoremess(String serviceStoreDitchCode);
+//    @Select("select DISTINCT service_store_ditch_code from t_service_store_proceed where service_store_user = #{userid}")
+//    String getStoreId(String userid);
+//
+//    @Select("select * from  t_service_store where 1=1 and service_store_ditch_code = #{serviceStoreDitchCode}")
+//    ServiceHallModel getStoremess(String serviceStoreDitchCode);
 
     /**
      * 查询用户的调查表做到第几步
@@ -523,7 +521,7 @@ public interface ServiceHallDao {
     @Select("select taste_answer_textarea from t_taste_answer_network where taste_answer_topic_id = #{serviceStoreMytopicId}")
     String getTasteMessageNetwork(Integer serviceStoreMytopicId);
 
-    @Select("select taste_answer_img from t_taste_answer_market where taste_answer_topic_id = #{serviceStoreMytopicId}")
+    @Select("select taste_answer_textarea from t_taste_answer_market where taste_answer_topic_id = #{serviceStoreMytopicId}")
     String getTasteMessagemarket(Integer serviceStoreMytopicId);
 
     @Select("select taste_answer_img from t_taste_answer_network where taste_answer_topic_id = #{serviceStoreMytopicId}")
@@ -531,4 +529,50 @@ public interface ServiceHallDao {
 
     @Select("select taste_answer_img from t_taste_answer_market where taste_answer_topic_id = #{serviceStoreMytopicId}")
     String getTasteImgsmarket(Integer serviceStoreMytopicId);
+
+    @Select("select service_store_topic_network_name from t_service_store_topic_network_dome")
+    List<String> getSummaryMorenNetworl();
+
+    @Select("select service_store_topic_marketplace_name from t_service_store_topic_marketplace_dome")
+    List<String> getSummaryMorenMarket();
+
+    @Select("select service_store_mytopic_type from t_service_store_mytopic_proceed_end")
+    Integer getSummarylistType(Integer serviceStoreMytopicId);
+
+    @Select("select service_store_mytopic_context from t_service_store_mytopic_proceed_end where  1=1")
+    String getSummartZidingYi(Integer serviceStoreMytopicId);
+
+    @Select("select summary_answer_textarea from t_summary_answer_network where 1=1")
+    String getSummaryMessage(Integer serviceStoreMytopicId);
+
+    @Insert("insert into t_service_store_judge_end(judge_topic_id,judge_value) values(#{serviceStoreMytopicId},#{sb1})")
+    void saveJudge(Integer serviceStoreMytopicId, String sb1);
+
+    @Insert("insert into t_service_store_proceed_end_judge(service_store_proceed_id,service_store_user,service_store_ditch_code,service_store_date,service_store_time,\n" +
+            "service_store_grab_time,service_store_active,service_store_mytopic_id,service_store_state,service_store_end_time) select service_store_proceed_id,service_store_user,service_store_ditch_code,service_store_date,service_store_time,\n" +
+            "service_store_grab_time,service_store_active,service_store_mytopic_id,service_store_state,service_store_end_time from  t_service_store_proceed_end")
+    void insertJudgeEnd();
+
+
+    @Delete("delete  from t_service_store_proceed_end where  service_store_mytopic_id = #{serviceStoreMytopicId}")
+    void deleteJudge(Integer serviceStoreMytopicId);
+
+    @Select("select * from t_service_store where service_store_ditch_code = #{serviceStoreDitchCode}")
+    ServiceHallModel getServiceHallModel(String serviceStoreDitchCode);
+
+    @Update("update t_service_store_proceed set service_store_clock= #{clockDate} where service_store_user=#{userid}")
+    void insertClockDate(String clockDate, String userid);
+
+
+    @Select("select * from t_service_store  where service_store_ditch_code = #{serviceStoreDitchCode}")
+    ServiceHallModel proceedClock(String serviceStoreDitchCode);
+
+    @Select("select count(1) from t_service_store")
+    Integer getGrabCount();
+
+    @Select("select count(1) from t_service_store_proceed where service_store_user = #{userid}")
+    Integer getProlCount(String userid);
+
+    @Select("select count(1) from t_service_store_proceed_end where service_store_user=#{userid}")
+    Integer getJudgeCount(String userid);
 }

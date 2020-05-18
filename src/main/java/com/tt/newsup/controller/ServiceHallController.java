@@ -2,9 +2,11 @@ package com.tt.newsup.controller;
 
 import com.tt.newsup.model.*;
 import com.tt.newsup.server.ServiceHallService;
+import com.tt.newsup.utils.DistanceUtils;
 import com.tt.newsup.utils.FileNameUtil;
 import com.tt.newsup.utils.FileUploadUtil;
 import jdk.nashorn.internal.ir.RuntimeNode;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,8 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.websocket.server.ServerEndpoint;
-import java.io.File;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -89,6 +90,8 @@ public class ServiceHallController {
     @CrossOrigin
     public MytopicListModel getmytopiclist(@Param("user")String user){
         ServiceStoreTopicProceedModel serviceStoreTopicProceedModel = serviceHallService.getmytopiclist(user);
+        System.out.println(serviceStoreTopicProceedModel != null);
+        System.out.println(user);
         if(serviceStoreTopicProceedModel != null){
             Integer type = serviceStoreTopicProceedModel.getServiceStoreMytopicType();
             Integer mytopicId = serviceStoreTopicProceedModel.getServiceStoreMytopicId();
@@ -99,7 +102,6 @@ public class ServiceHallController {
             }else{
                 stringList = serviceHallService.getmarkettopic();
             }
-            //todo 如果课题类型不为1，则获取市场的默认课题列表
             String zidingyistring = serviceStoreTopicProceedModel.getServiceStoreMytopicContext();
             List<String> stringLists = new ArrayList<>();
             String[] strArr = zidingyistring.split("%\\^&\\*");
@@ -214,12 +216,12 @@ public class ServiceHallController {
      * @param userid
      * @return
      */
-    @RequestMapping("/getstoremess")
-    @CrossOrigin
-    public ServiceHallModel getstoremess(@RequestParam("userid") String userid){
-        ServiceHallModel serviceHallModel =  serviceHallService.getstoremess(userid);
-        return serviceHallModel;
-    }
+//    @RequestMapping("/getstoremess")
+//    @CrossOrigin
+//    public ServiceHallModel getstoremess(@RequestParam("userid") String userid){
+//        ServiceHallModel serviceHallModel =  serviceHallService.getstoremess(userid);
+//        return serviceHallModel;
+//    }
 
 
     /**
@@ -286,7 +288,7 @@ public class ServiceHallController {
 
 
         String localPath="/Users/mac/Documents/upload/"; //MAC路径
-        //String localPath ="D:/images/";  //windows路径
+//        String localPath ="D:/images/";  //windows路径
 
         String fileName=file.getOriginalFilename();
         String newfileName = FileNameUtil.getFileName(fileName);
@@ -622,5 +624,84 @@ public class ServiceHallController {
     }
 
 
+    @RequestMapping("/dingwei")
+    @CrossOrigin
+    public RestResponseModel dingwei(@RequestParam("lng")double lng,
+                        @RequestParam("lat")double lat,
+                        @RequestParam("userid")String userid
+                        ) throws ParseException {
+        //先查出有没有已抢单正在进行中的数据
+
+        RestResponseModel restResponseModel = serviceHallService.getServiceProceed(lng,lat,userid);
+
+        return  restResponseModel;
+    }
+
+
+
+    //获取课题总结表的线条类型
+    @RequestMapping("/getsummarylisttype")
+    @CrossOrigin
+    public Integer getSummarylistType(@RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId){
+
+
+        Integer type = serviceHallService.getSummarylistType(serviceStoreMytopicId);
+
+        return  type;
+
+    }
+
+    @RequestMapping("/getsummarymoren")
+    @CrossOrigin
+    public List<String> getSummaryMoren(@RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId,
+                                        @RequestParam("type")Integer type){
+        List<String> Stringstr = serviceHallService.getSummaryMoren(serviceStoreMytopicId,type);
+        return Stringstr;
+    }
+
+    @RequestMapping("/getsummartzidingyi")
+    @CrossOrigin
+    public List<String> getSummartZidingYi(@RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId){
+
+        List<String> stringList =  serviceHallService.getSummartZidingYi(serviceStoreMytopicId);
+        return stringList;
+    }
+
+    @RequestMapping("/getsummarymessage")
+    @CrossOrigin
+    public String getSummaryMessage(@RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId){
+        String message = serviceHallService.getSummaryMessage(serviceStoreMytopicId);
+        return message;
+    }
+
+    @RequestMapping("/savejudge")
+    @CrossOrigin
+    public void savejudge(@RequestParam("serviceStoreMytopicId")Integer serviceStoreMytopicId,
+                          @RequestParam("value")List<String> value){
+        serviceHallService.saveJudge(serviceStoreMytopicId,value);
+    }
+
+
+    @RequestMapping("/proceedclock")
+    @CrossOrigin
+    public ServiceHallModel proceedClock(@RequestParam("serviceStoreDitchCode")String serviceStoreDitchCode,
+                                         @RequestParam("userid")String userid) throws ParseException {
+
+        ServiceHallModel serviceHallModel = serviceHallService.proceedClock(serviceStoreDitchCode,userid);
+
+
+        return serviceHallModel;
+
+
+    }
+
+    @RequestMapping("/getgathercount")
+    @CrossOrigin
+    public ServiceCountModel getGatherCount(@RequestParam("userid")String userid){
+
+        ServiceCountModel serviceCountModel = serviceHallService.getGatherCount(userid);
+
+        return  serviceCountModel;
+    }
 
 }

@@ -4,17 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 /**
  * @author ：tt
- * @date ：Created in 2020/4/30 4:31 下午
- * @description：图片上传的数据模型
+ * @date ：Created in 2020/5/13 1:16 上午
+ * @description：存放的是评价后的数据
  * @modified By：
  * @version:
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ImageModel {
-    private  String  url;
+public class ServiceStoreJudgeEnd {
+    private Integer judgeTopicId;
+    private String judgeValue;//        judge_value
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author ：tt
@@ -18,11 +19,12 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class ServiceHallProceedModel  implements Serializable {
     private static final long serialVersionUID = -5349572718341148885L;
-    private Integer serviceStoreProceed;
+    private Integer serviceStoreProceedId;
     private String serviceStoreUser;
     private String serviceStoreDitchCode; //service_store_ditch_code
     private String serviceStoreDate;
     private String serviceStoreTime;
     private Integer serviceStoreActive;
     private Integer serviceStoreMytopicId;
+    private String serviceStoreClock;
 }

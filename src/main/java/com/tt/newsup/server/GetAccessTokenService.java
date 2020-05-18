@@ -33,7 +33,7 @@ public class GetAccessTokenService {
         CloseableHttpClient client =null;
         CloseableHttpResponse response = null;
         final String corpid = "wwef896039f17ed93a";
-        final String corpsecret = "QTC31rILx7u8PnqX2QCenUDSfZvgRdLRoiElwqIMQ8c";
+        final String corpsecret = "NHKF4CTlOnzcigQ9RkGDy6Mug6_ssD21xI8abBw17Oo";
         //创建HTTPClient对象
         client = HttpClients.createDefault();
         String url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=" + corpid + "&corpsecret=" + corpsecret;

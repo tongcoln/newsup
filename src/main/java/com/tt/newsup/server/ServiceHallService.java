@@ -2,11 +2,17 @@ package com.tt.newsup.server;
 
 import com.tt.newsup.dao.ServiceHallDao;
 import com.tt.newsup.model.*;
+import com.tt.newsup.utils.ContrastUtils;
+import com.tt.newsup.utils.DistanceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,6 +23,7 @@ import java.util.List;
  * @version:
  */
 @Service
+@Transactional
 public class ServiceHallService {
 
     @Autowired
@@ -151,11 +158,11 @@ public class ServiceHallService {
      * @param userid
      * @return
      */
-    public ServiceHallModel getstoremess(String userid) {
-        String serviceStoreDitchCode = serviceHallDao.getStoreId(userid);
-        ServiceHallModel serviceHallModel = serviceHallDao.getStoremess(serviceStoreDitchCode);
-        return serviceHallModel;
-    }
+//    public ServiceHallModel getstoremess(String userid) {
+//        String serviceStoreDitchCode = serviceHallDao.getStoreId(userid);
+//        ServiceHallModel serviceHallModel = serviceHallDao.getStoremess(serviceStoreDitchCode);
+//        return serviceHallModel;
+//    }
 
     /**
      * 查询用户的调查表做到第几步
@@ -591,15 +598,15 @@ public class ServiceHallService {
             }
 
             List<List<ImageModel>> getmanageImage = this.gettasteImage(userid);
-            ;
-            for (int j = 0; j < getmanageImage.size(); j++) {
-                StringBuilder imgpathes = new StringBuilder();
-                for (int k = 0; k < getmanageImage.get(j).size(); k++) {
-                    imgpathes.append(getmanageImage.get(j).get(k)).append("!@#");
+            if(getmanageImage != null) {
+                for (int j = 0; j < getmanageImage.size(); j++) {
+                    StringBuilder imgpathes = new StringBuilder();
+                    for (int k = 0; k < getmanageImage.get(j).size(); k++) {
+                        imgpathes.append(getmanageImage.get(j).get(k)).append("!@#");
+                    }
+                    imgpathzongti.append(imgpathes).append("#@!");
                 }
-                imgpathzongti.append(imgpathes).append("#@!");
             }
-
             String roidzongtistr = roidzongti+"";
             String messagezongtistr = messagezongti+"";
             String imgpathzongtistr = imgpathzongti+"";
@@ -629,7 +636,7 @@ public class ServiceHallService {
      */
     public String saveSummary(String userid, Integer type, String message) {
         String code= "2";
-        try {
+
             Integer manageAnswerTopicId = serviceHallDao.getAnswerTopId(userid);
             Integer manageAnswerProceedId = serviceHallDao.getAnswerProceedId(userid);
             //保存答案
@@ -645,9 +652,7 @@ public class ServiceHallService {
             //删除课题表中正在进行的课题
             serviceHallDao.deleteMytopicProgree(userid);
             code ="1";
-        }catch (Exception e){
 
-        }
 
         return code;
     }
@@ -781,8 +786,8 @@ public class ServiceHallService {
             if (i == name){
                 String[] messageretuen = messages[i].split("!@#");
                 for(int j = 0;j<messageretuen.length;j++){
-                    if (messageretuen[j] == null){
-                        stringlist.add("");
+                    if (messageretuen[j].equals("null")){
+                        stringlist.add("未留下任何意见");
                     }else{
                         stringlist.add(messageretuen[j]);
                     }
@@ -898,6 +903,135 @@ public class ServiceHallService {
             imglists.add(imageModels);
         }
         return imglists;
+    }
+
+    //根据课题ID获取课题的线条类型
+     public Integer getSummarylistType(Integer serviceStoreMytopicId) {
+        Integer type = serviceHallDao.getSummarylistType(serviceStoreMytopicId);
+
+        return null;
+    }
+
+    public List<String> getSummaryMoren(Integer serviceStoreMytopicId, Integer type) {
+        List<String> stringList = new ArrayList<>();
+        if (type == 1){
+            stringList =serviceHallDao.getSummaryMorenNetworl();
+        }
+
+        if (type  ==2){
+            stringList = serviceHallDao.getSummaryMorenMarket();
+        }
+        return stringList;
+    }
+
+    public List<String> getSummartZidingYi(Integer serviceStoreMytopicId) {
+        String zidingyi = serviceHallDao.getSummartZidingYi(serviceStoreMytopicId);
+        String[] strArr = zidingyi.split("%\\^&\\*");
+        List<String> stringLists = new ArrayList<>();
+        for (int i = 1; i < strArr.length; i++) {
+            if (strArr[i].endsWith(",")) {
+                String newstr = strArr[i].substring(0, strArr[i].length() - 1);
+                stringLists.add(newstr);
+            } else {
+                stringLists.add(strArr[i]);
+            }
+        }
+        return  stringLists;
+    }
+
+    public String getSummaryMessage(Integer serviceStoreMytopicId) {
+        String message = serviceHallDao.getSummaryMessage(serviceStoreMytopicId);
+        System.out.println(message);
+        return message;
+    }
+
+    public void saveJudge(Integer serviceStoreMytopicId, List<String> value) {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0;i<value.size();i++){
+            sb.append(value.get(i)).append(",");
+        }
+        String sb1 = sb+"";
+        serviceHallDao.insertJudgeEnd();
+        serviceHallDao.deleteJudge(serviceStoreMytopicId);
+        serviceHallDao.saveJudge(serviceStoreMytopicId,sb1);
+    }
+
+    //判断是否有正在进行中的任务
+    public RestResponseModel getServiceProceed(double lng, double lat, String userid) throws ParseException {
+        RestResponseModel restResponseModel = new RestResponseModel();
+        ServiceHallProceedModel serviceHallProceedModel = serviceHallDao.getServiceHallProceed(userid);
+
+
+        if (serviceHallProceedModel == null){ //判断是否查询出有正在进行的站厅，没有则返回1
+            restResponseModel.setCode(1);
+            return restResponseModel;
+        }else {
+            String serviceStoreDitchCode = serviceHallProceedModel.getServiceStoreDitchCode();
+            ServiceHallModel serviceHallModel = serviceHallDao.getServiceHallModel(serviceStoreDitchCode);
+            if (serviceHallProceedModel.getServiceStoreClock() != null) {
+                restResponseModel.setCode(10);
+                restResponseModel.setData(serviceHallModel);
+                return  restResponseModel;
+            } else {
+                double storeLng = serviceHallModel.getServiceStoreLong();
+                double storeLat = serviceHallModel.getServiceStoreLat();
+                double s = DistanceUtils.getDistance(lng, lat, storeLng, storeLat);
+                System.out.println(s);
+                String storeDate = serviceHallProceedModel.getServiceStoreDate();
+                String storetime = serviceHallProceedModel.getServiceStoreTime();
+                if (!ContrastUtils.contrastDateUtil(storeDate)) { //如果抢站的日期跟现在的日期不一致 则返回2
+                    restResponseModel.setMsg(ContrastUtils.retrunTimeString(storeDate,storetime));
+                    restResponseModel.setCode(2);
+                    restResponseModel.setData(serviceHallProceedModel);
+                    return restResponseModel;
+                } else {
+                    if (!ContrastUtils.contrastTimeUtil(storetime)) { //日期相等后，如果时间段不对则返回3
+                        restResponseModel.setMsg(ContrastUtils.retrunTimeString(storeDate,storetime));
+                        restResponseModel.setCode(3);
+                        restResponseModel.setData(serviceHallProceedModel);
+                        return restResponseModel;
+                    } else { //时间段也对上了，就判断 距离是否小于0.6KM
+                        if (s > 0.6) { //大于0.6 返回4
+                            restResponseModel.setCode(4);
+                            restResponseModel.setData(serviceHallProceedModel);
+                            return restResponseModel;
+                        } else {
+                            restResponseModel.setCode(0);
+                            restResponseModel.setData(serviceHallProceedModel);
+                            return restResponseModel;
+                        }
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    public ServiceHallModel proceedClock(String serviceStoreDitchCode,String userid) throws ParseException {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        String clockDate = sdf.format(date);
+        serviceHallDao.insertClockDate(clockDate,userid);
+        ServiceHallModel serviceHallModel = serviceHallDao.proceedClock(serviceStoreDitchCode);
+
+        return serviceHallModel;
+
+    }
+
+    public ServiceCountModel getGatherCount(String userid) {
+        ServiceCountModel serviceCountModel = new ServiceCountModel();
+        Integer grabCount = serviceHallDao.getGrabCount();
+        Integer prolCount = serviceHallDao.getProlCount(userid);
+        Integer judgeCount = serviceHallDao.getJudgeCount(userid);
+        Integer endCount = 0;
+
+        serviceCountModel.setGrabCount(grabCount);
+        serviceCountModel.setProlCount(prolCount);
+        serviceCountModel.setJudgeCount(judgeCount);
+        serviceCountModel.setEndCount(endCount);
+        return serviceCountModel;
     }
 }
 
